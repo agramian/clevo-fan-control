@@ -33,11 +33,11 @@ make install
 `/usr/local/bin/clevo-fan-control <0-100>`
 
 ## TODO
--[ ] Provide necessary files or instructions for autostarting
--[ ] Convert to or also support KStatusNotif
--[ ] Port from C to C++
--[ ] Provide multiple fan profiles
--[ ] Support custom fan curves via an input file
+- [ ] Provide necessary files or instructions for autostarting
+- [ ] Convert to or also support KStatusNotif
+- [ ] Port from C to C++
+- [ ] Provide multiple fan profiles
+- [ ] Support custom fan curves via an input file
 
 ## Credits and Acknowledgements
 
