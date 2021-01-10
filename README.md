@@ -43,3 +43,6 @@ make install
 
 This project is based on 
 [Clevo Fan Control Indicator for Ubuntu](https://github.com/SkyLandTW/clevo-indicator).
+
+The fan profiles are based off the ones provided with the
+[Tuxedo Control Center](https://github.com/tuxedocomputers/tuxedo-control-center/blob/master/src/common/models/TccFanTable.ts).
