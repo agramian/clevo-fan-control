@@ -34,7 +34,7 @@ make install
 
 ## TODO
 - [ ] Provide necessary files or instructions for autostarting
-- [ ] Convert to or also support KStatusNotif
+- [ ] Convert to or also support KStatusNotifierItem (KSNI)
 - [ ] Port from C to C++
 - [ ] Provide multiple fan profiles
 - [ ] Support custom fan curves via an input file
