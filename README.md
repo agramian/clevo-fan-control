@@ -38,6 +38,8 @@ make install
 - [ ] Port from C to C++
 - [ ] Provide multiple fan profiles
 - [ ] Support custom fan curves via an input file
+- [ ] Implement use of CMake, Meson, or possible other build/dependency management system
+- [ ] Build AppImage for cross-distribution support
 
 ## Credits and Acknowledgements
 
