@@ -27,7 +27,7 @@ target_link_libraries(clevo-fan-control ${APPINDICATOR_LIBRARIES} ${GTK3_LIBRARI
 install(
         TARGETS clevo-fan-control
         PERMISSIONS WORLD_EXECUTE OWNER_WRITE OWNER_READ SETUID GROUP_EXECUTE
-        DESTINATION ./bin
+        DESTINATION bin
 )
 
 
