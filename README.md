@@ -20,10 +20,11 @@ package manager available for your Linux distribution.
 To install the service, run the following from a directory where you are
 comfortable having temporary build files generated.
 
-By default the service will be installed to `/usr/local/bin`.
+By default the service will be installed to `/usr/local/bin` and the
+.desktop file for autostart to `~/.config/autostart`.
 
 ```shell
-cmake <path/to/clevo-fan-control>
+cmake -DUSER=<user> -DGROUP=<user group> -DHOME=<home directory path> <path/to/clevo-fan-control>
 cmake --build .
 sudo cmake --install .
 ```
