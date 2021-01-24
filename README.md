@@ -50,7 +50,10 @@ sudo xargs rm < install_manifest.txt
 
 ## TODO
 
-- [ ] Provide necessary files or instructions for autostarting
+- [x] Provide necessary files or instructions for autostarting
+- [ ] Update notification with CPU temp and Fan duty
+- [ ] Add additional .desktop file for normal access
+- [ ] Add icon for .desktop file and update tray icon
 - [ ] Convert to or also support KStatusNotifierItem (KSNI)
 - [ ] Port from C to C++
 - [ ] Provide multiple fan profiles
