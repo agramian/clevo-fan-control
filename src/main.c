@@ -78,60 +78,86 @@ typedef enum {
 } MenuItemType;
 
 static void main_init_share(void);
+
 static int main_ec_worker(void);
-static void main_ui_worker(int argc, char** argv);
+
+static void main_ui_worker(int argc, char **argv);
+
 static void main_on_sigchld(int signum);
+
 static void main_on_sigterm(int signum);
+
 static int main_dump_fan(void);
+
 static int main_test_fan(int duty_percentage);
+
 static gboolean ui_update(gpointer user_data);
+
 static void ui_command_set_fan(long fan_duty);
-static void ui_command_quit(gchar* command);
+
+static void ui_command_quit(gchar *command);
+
 static void ui_toggle_menuitems(int fan_duty);
+
 static void ec_on_sigterm(int signum);
+
 static int ec_init(void);
+
 static int ec_auto_duty_adjust(void);
+
 static int ec_query_cpu_temp(void);
+
 static int ec_query_gpu_temp(void);
+
 static int ec_query_fan_duty(void);
+
 static int ec_query_fan_rpms(void);
+
 static int ec_write_fan_duty(int duty_percentage);
+
 static int ec_io_wait(const uint32_t port, const uint32_t flag,
-        const char value);
+                      const char value);
+
 static uint8_t ec_io_read(const uint32_t port);
+
 static int ec_io_do(const uint32_t cmd, const uint32_t port,
-        const uint8_t value);
+                    const uint8_t value);
+
 static int calculate_fan_duty(int raw_duty);
+
 static int calculate_fan_rpms(int raw_rpm_high, int raw_rpm_low);
-static int check_proc_instances(const char* proc_name);
-static void get_time_string(char* buffer, size_t max, const char* format);
+
+static int check_proc_instances(const char *proc_name);
+
+static void get_time_string(char *buffer, size_t max, const char *format);
+
 static void signal_term(__sighandler_t handler);
 
-static AppIndicator* indicator = NULL;
+static AppIndicator *indicator = NULL;
 
 struct {
     char label[256];
     GCallback callback;
     long option;
     MenuItemType type;
-    GtkWidget* widget;
+    GtkWidget *widget;
 
-}static menuitems[] = {
-        { "Set FAN to AUTO", G_CALLBACK(ui_command_set_fan), -1, AUTO, NULL },
-        { "", NULL, 0L, NA, NULL },
-        { "Set FAN to  0%", G_CALLBACK(ui_command_set_fan), 0, MANUAL, NULL },
-        { "Set FAN to  10%", G_CALLBACK(ui_command_set_fan), 10, MANUAL, NULL },
-        { "Set FAN to  20%", G_CALLBACK(ui_command_set_fan), 20, MANUAL, NULL },
-        { "Set FAN to  30%", G_CALLBACK(ui_command_set_fan), 30, MANUAL, NULL },
-        { "Set FAN to  40%", G_CALLBACK(ui_command_set_fan), 40, MANUAL, NULL },
-        { "Set FAN to  50%", G_CALLBACK(ui_command_set_fan), 50, MANUAL, NULL },
-        { "Set FAN to  60%", G_CALLBACK(ui_command_set_fan), 60, MANUAL, NULL },
-        { "Set FAN to  70%", G_CALLBACK(ui_command_set_fan), 70, MANUAL, NULL },
-        { "Set FAN to  80%", G_CALLBACK(ui_command_set_fan), 80, MANUAL, NULL },
-        { "Set FAN to  90%", G_CALLBACK(ui_command_set_fan), 90, MANUAL, NULL },
-        { "Set FAN to 100%", G_CALLBACK(ui_command_set_fan), 100, MANUAL, NULL },
-        { "", NULL, 0L, NA, NULL },
-        { "Quit", G_CALLBACK(ui_command_quit), 0L, NA, NULL }
+} static menuitems[] = {
+        {"Set FAN to AUTO", G_CALLBACK(ui_command_set_fan), -1,  AUTO,   NULL},
+        {"",                NULL,                           0L,  NA,     NULL},
+        {"Set FAN to  0%",  G_CALLBACK(ui_command_set_fan), 0,   MANUAL, NULL},
+        {"Set FAN to  10%", G_CALLBACK(ui_command_set_fan), 10,  MANUAL, NULL},
+        {"Set FAN to  20%", G_CALLBACK(ui_command_set_fan), 20,  MANUAL, NULL},
+        {"Set FAN to  30%", G_CALLBACK(ui_command_set_fan), 30,  MANUAL, NULL},
+        {"Set FAN to  40%", G_CALLBACK(ui_command_set_fan), 40,  MANUAL, NULL},
+        {"Set FAN to  50%", G_CALLBACK(ui_command_set_fan), 50,  MANUAL, NULL},
+        {"Set FAN to  60%", G_CALLBACK(ui_command_set_fan), 60,  MANUAL, NULL},
+        {"Set FAN to  70%", G_CALLBACK(ui_command_set_fan), 70,  MANUAL, NULL},
+        {"Set FAN to  80%", G_CALLBACK(ui_command_set_fan), 80,  MANUAL, NULL},
+        {"Set FAN to  90%", G_CALLBACK(ui_command_set_fan), 90,  MANUAL, NULL},
+        {"Set FAN to 100%", G_CALLBACK(ui_command_set_fan), 100, MANUAL, NULL},
+        {"",                NULL,                           0L,  NA,     NULL},
+        {"Quit",            G_CALLBACK(ui_command_quit),    0L,  NA,     NULL}
 };
 
 static int menuitem_count = (sizeof(menuitems) / sizeof(menuitems[0]));
@@ -146,11 +172,11 @@ struct {
     volatile int auto_duty_val;
     volatile int manual_next_fan_duty;
     volatile int manual_prev_fan_duty;
-}static *share_info = NULL;
+} static *share_info = NULL;
 
 static pid_t parent_pid = 0;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     printf("Simple fan control utility for Clevo laptops\n");
 
     if (argc > 1 && strcmp(argv[1], "exit") == 0) {
@@ -164,28 +190,28 @@ int main(int argc, char* argv[]) {
     }
     if (check_proc_instances(NAME) > 1) {
         printf("Multiple running instances!\n");
-        char* display = getenv("DISPLAY");
+        char *display = getenv("DISPLAY");
         if (display != NULL && strlen(display) > 0) {
             int desktop_uid = getuid();
             setuid(desktop_uid);
             //
             gtk_init(&argc, &argv);
-            GtkWidget* dialog = gtk_message_dialog_new(NULL, 0,
-                    GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-                    "Multiple running instances of %s!", NAME);
+            GtkWidget *dialog = gtk_message_dialog_new(NULL, 0,
+                                                       GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+                                                       "Multiple running instances of %s!", NAME);
             gtk_dialog_run(GTK_DIALOG(dialog));
             gtk_widget_destroy(dialog);
         }
         return EXIT_FAILURE;
     }
     if (ec_init() != EXIT_SUCCESS) {
-    printf("ecinit\n");
+        printf("ecinit\n");
         printf("unable to control EC: %s\n", strerror(errno));
         return EXIT_FAILURE;
     }
     if (argc <= 1) {
-    printf("argc\n");
-        char* display = getenv("DISPLAY");
+        printf("argc\n");
+        char *display = getenv("DISPLAY");
         if (display == NULL || strlen(display) == 0) {
             return main_dump_fan();
         } else {
@@ -210,7 +236,7 @@ int main(int argc, char* argv[]) {
         }
     } else {
         if (argv[1][0] == '-') {
-        printf("argv10\n");
+            printf("argv10\n");
             printf(
                     "\n\
 Usage: clevo-indicator [fan-duty-percentage]\n\
@@ -245,11 +271,10 @@ DO NOT MANIPULATE OR QUERY EC I/O PORTS WHILE THIS PROGRAM IS RUNNING.\n\
 \n");
             return main_dump_fan();
         } else {
-        printf("ATOI\n");
+            printf("ATOI\n");
 
             int val = atoi(argv[1]);
-            if (val < 0 || val > 100)
-                    {
+            if (val < 0 || val > 100) {
                 printf("invalid fan duty %d!\n", val);
                 return EXIT_FAILURE;
             }
@@ -260,8 +285,8 @@ DO NOT MANIPULATE OR QUERY EC I/O PORTS WHILE THIS PROGRAM IS RUNNING.\n\
 }
 
 static void main_init_share(void) {
-    void* shm = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_ANON | MAP_SHARED,
-            -1, 0);
+    void *shm = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_ANON | MAP_SHARED,
+                     -1, 0);
     share_info = shm;
     share_info->exit = 0;
     share_info->cpu_temp = 0;
@@ -298,22 +323,22 @@ static int main_ec_worker(void) {
         unsigned char buf[EC_REG_SIZE];
         ssize_t len = read(io_fd, buf, EC_REG_SIZE);
         switch (len) {
-        case -1:
-            printf("unable to read EC from sysfs: %s\n", strerror(errno));
-            break;
-        case 0x100:
-            share_info->cpu_temp = buf[EC_REG_CPU_TEMP];
-            share_info->gpu_temp = buf[EC_REG_GPU_TEMP];
-            share_info->fan_duty = calculate_fan_duty(buf[EC_REG_FAN_DUTY]);
-            share_info->fan_rpms = calculate_fan_rpms(buf[EC_REG_FAN_RPMS_HI],
-                    buf[EC_REG_FAN_RPMS_LO]);
-            /*
-             printf("temp=%d, duty=%d, rpms=%d\n", share_info->cpu_temp,
-             share_info->fan_duty, share_info->fan_rpms);
-             */
-            break;
-        default:
-            printf("wrong EC size from sysfs: %ld\n", len);
+            case -1:
+                printf("unable to read EC from sysfs: %s\n", strerror(errno));
+                break;
+            case 0x100:
+                share_info->cpu_temp = buf[EC_REG_CPU_TEMP];
+                share_info->gpu_temp = buf[EC_REG_GPU_TEMP];
+                share_info->fan_duty = calculate_fan_duty(buf[EC_REG_FAN_DUTY]);
+                share_info->fan_rpms = calculate_fan_rpms(buf[EC_REG_FAN_RPMS_HI],
+                                                          buf[EC_REG_FAN_RPMS_LO]);
+                /*
+                 printf("temp=%d, duty=%d, rpms=%d\n", share_info->cpu_temp,
+                 share_info->fan_duty, share_info->fan_rpms);
+                 */
+                break;
+            default:
+                printf("wrong EC size from sysfs: %ld\n", len);
         }
         close(io_fd);
         // auto EC
@@ -323,7 +348,7 @@ static int main_ec_worker(void) {
                 char s_time[256];
                 get_time_string(s_time, 256, "%m/%d %H:%M:%S");
                 printf("%s CPU=%d°C, GPU=%d°C, auto fan duty to %d%%\n", s_time,
-                        share_info->cpu_temp, share_info->gpu_temp, next_duty);
+                       share_info->cpu_temp, share_info->gpu_temp, next_duty);
                 ec_write_fan_duty(next_duty);
                 share_info->auto_duty_val = next_duty;
             }
@@ -335,23 +360,23 @@ static int main_ec_worker(void) {
     return EXIT_SUCCESS;
 }
 
-static void main_ui_worker(int argc, char** argv) {
+static void main_ui_worker(int argc, char **argv) {
     printf("Indicator...\n");
     int desktop_uid = getuid();
     setuid(desktop_uid);
     //
     gtk_init(&argc, &argv);
     //
-    GtkWidget* indicator_menu = gtk_menu_new();
+    GtkWidget *indicator_menu = gtk_menu_new();
     for (int i = 0; i < menuitem_count; i++) {
-        GtkWidget* item;
+        GtkWidget *item;
         if (strlen(menuitems[i].label) == 0) {
             item = gtk_separator_menu_item_new();
         } else {
             item = gtk_menu_item_new_with_label(menuitems[i].label);
             g_signal_connect_swapped(item, "activate",
-                    G_CALLBACK(menuitems[i].callback),
-                    (void* ) menuitems[i].option);
+                                     G_CALLBACK(menuitems[i].callback),
+                                     (void *) menuitems[i].option);
         }
         gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), item);
         menuitems[i].widget = item;
@@ -359,7 +384,7 @@ static void main_ui_worker(int argc, char** argv) {
     gtk_widget_show_all(indicator_menu);
     //
     indicator = app_indicator_new(NAME, "view-refresh",
-            APP_INDICATOR_CATEGORY_HARDWARE);
+                                  APP_INDICATOR_CATEGORY_HARDWARE);
     g_assert(IS_APP_INDICATOR(indicator));
     app_indicator_set_label(indicator, "Init..", "XX");
     app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
@@ -429,7 +454,7 @@ static void ui_command_set_fan(long fan_duty) {
     ui_toggle_menuitems(fan_duty_val);
 }
 
-static void ui_command_quit(gchar* command) {
+static void ui_command_quit(gchar *command) {
     printf("clicked on quit\n");
     gtk_main_quit();
 }
@@ -440,11 +465,11 @@ static void ui_toggle_menuitems(int fan_duty) {
             continue;
         if (fan_duty == -1)
             gtk_widget_set_sensitive(menuitems[i].widget,
-                    menuitems[i].type != AUTO);
+                                     menuitems[i].type != AUTO);
         else
             gtk_widget_set_sensitive(menuitems[i].widget,
-                    menuitems[i].type != MANUAL
-                            || (int) menuitems[i].option != fan_duty);
+                                     menuitems[i].type != MANUAL
+                                     || (int) menuitems[i].option != fan_duty);
     }
 }
 
@@ -537,7 +562,7 @@ static int ec_write_fan_duty(int duty_percentage) {
 }
 
 static int ec_io_wait(const uint32_t port, const uint32_t flag,
-        const char value) {
+                      const char value) {
     uint8_t data = inb(port);
     int i = 0;
     while ((((data >> flag) & 0x1) != value) && (i++ < 100)) {
@@ -546,7 +571,7 @@ static int ec_io_wait(const uint32_t port, const uint32_t flag,
     }
     if (i >= 100) {
         printf("wait_ec error on port 0x%x, data=0x%x, flag=0x%x, value=0x%x\n",
-                port, data, flag, value);
+               port, data, flag, value);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
@@ -567,7 +592,7 @@ static uint8_t ec_io_read(const uint32_t port) {
 }
 
 static int ec_io_do(const uint32_t cmd, const uint32_t port,
-        const uint8_t value) {
+                    const uint8_t value) {
     ec_io_wait(EC_SC, IBF, 0);
     outb(cmd, EC_SC);
 
@@ -589,18 +614,18 @@ static int calculate_fan_rpms(int raw_rpm_high, int raw_rpm_low) {
     return raw_rpm > 0 ? (2156220 / raw_rpm) : 0;
 }
 
-static int check_proc_instances(const char* proc_name) {
+static int check_proc_instances(const char *proc_name) {
     int proc_name_len = strlen(proc_name);
     pid_t this_pid = getpid();
-    DIR* dir;
+    DIR *dir;
     if (!(dir = opendir("/proc"))) {
         perror("can't open /proc");
         return -1;
     }
     int instance_count = 0;
-    struct dirent* ent;
+    struct dirent *ent;
     while ((ent = readdir(dir)) != NULL) {
-        char* endptr;
+        char *endptr;
         long lpid = strtol(ent->d_name, &endptr, 10);
         if (*endptr != '\0')
             continue;
@@ -608,11 +633,11 @@ static int check_proc_instances(const char* proc_name) {
             continue;
         char buf[512];
         snprintf(buf, sizeof(buf), "/proc/%ld/comm", lpid);
-        FILE* fp = fopen(buf, "r");
+        FILE *fp = fopen(buf, "r");
         if (fp) {
             if (fgets(buf, sizeof(buf), fp) != NULL) {
                 if ((buf[proc_name_len] == '\n' || buf[proc_name_len] == '\0')
-                        && strncmp(buf, proc_name, proc_name_len) == 0) {
+                    && strncmp(buf, proc_name, proc_name_len) == 0) {
                     fprintf(stderr, "Process: %ld\n", lpid);
                     instance_count += 1;
                 }
@@ -624,7 +649,7 @@ static int check_proc_instances(const char* proc_name) {
     return instance_count;
 }
 
-static void get_time_string(char* buffer, size_t max, const char* format) {
+static void get_time_string(char *buffer, size_t max, const char *format) {
     time_t timer;
     struct tm tm_info;
     time(&timer);
