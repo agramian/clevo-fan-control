@@ -392,7 +392,7 @@ static void main_ui_worker(int argc, char **argv) {
     app_indicator_set_title(indicator, "Clevo\n<h5>Yo</h5>");
     app_indicator_set_menu(indicator, GTK_MENU(indicator_menu));
     g_timeout_add(500, &ui_update, NULL);
-    ui_toggle_menuitems(share_info->fan_duty);
+    ui_toggle_menuitems(share_info->auto_duty ? -1 : share_info->fan_duty);
     gtk_main();
     printf("main on UI quit\n");
 }
