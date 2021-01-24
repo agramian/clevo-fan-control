@@ -15,8 +15,7 @@ package manager available for your Linux distribution.
 - AppIndicator3
 - GTK+3
 
-Build and Install
------------------
+## Build and Install
 
 To install the service, run the following from a directory where you are
 comfortable having temporary build files generated.
@@ -25,6 +24,15 @@ comfortable having temporary build files generated.
 cmake <path/to/clevo-fan-control>
 cmake --build .
 sudo cmake --install .
+```
+
+### Uninstalling
+
+Use the `install_manifest.txt` generated when installing to remove the
+files.
+
+```shell
+sudo xargs rm < install_manifest.txt
 ```
 
 ## Usage
