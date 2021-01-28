@@ -41,11 +41,9 @@
 #include <string.h>
 #include <sys/io.h>
 #include <sys/mman.h>
-#include <sys/prctl.h>
-#include <sys/syscall.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <libappindicator/app-indicator.h>
 
@@ -72,6 +70,7 @@
 #define EC_REG_FAN_RPMS_LO 0xD1
 
 #define MAX_FAN_RPM 4400.0
+#define MIN_FAN_DUTY 16
 
 typedef enum {
     NA = 0, AUTO = 1, MANUAL = 2
@@ -133,6 +132,10 @@ static void get_time_string(char *buffer, size_t max, const char *format);
 
 static void signal_term(__sighandler_t handler);
 
+static int64_t millis();
+
+static float get_point_along_line(float x0, float y0, float x1, float y1, float xp);
+
 static AppIndicator *indicator = NULL;
 
 struct {
@@ -147,6 +150,11 @@ struct {
         {"",                NULL,                           0L,  NA,     NULL},
         {"Set FAN to  0%",  G_CALLBACK(ui_command_set_fan), 0,   MANUAL, NULL},
         {"Set FAN to  10%", G_CALLBACK(ui_command_set_fan), 10,  MANUAL, NULL},
+        {"Set FAN to  15%", G_CALLBACK(ui_command_set_fan), 15,  MANUAL, NULL},
+        {"Set FAN to  16%", G_CALLBACK(ui_command_set_fan), 16,  MANUAL, NULL},
+        {"Set FAN to  17%", G_CALLBACK(ui_command_set_fan), 17,  MANUAL, NULL},
+        {"Set FAN to  18%", G_CALLBACK(ui_command_set_fan), 18,  MANUAL, NULL},
+        {"Set FAN to  19%", G_CALLBACK(ui_command_set_fan), 19,  MANUAL, NULL},
         {"Set FAN to  20%", G_CALLBACK(ui_command_set_fan), 20,  MANUAL, NULL},
         {"Set FAN to  30%", G_CALLBACK(ui_command_set_fan), 30,  MANUAL, NULL},
         {"Set FAN to  40%", G_CALLBACK(ui_command_set_fan), 40,  MANUAL, NULL},
@@ -172,6 +180,7 @@ struct {
     volatile int auto_duty_val;
     volatile int manual_next_fan_duty;
     volatile int manual_prev_fan_duty;
+    volatile int64_t last_update_time_ms;
 } static *share_info = NULL;
 
 static pid_t parent_pid = 0;
@@ -210,7 +219,6 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     if (argc <= 1) {
-        printf("argc\n");
         char *display = getenv("DISPLAY");
         if (display == NULL || strlen(display) == 0) {
             return main_dump_fan();
@@ -297,6 +305,7 @@ static void main_init_share(void) {
     share_info->auto_duty_val = -1;
     share_info->manual_next_fan_duty = 0;
     share_info->manual_prev_fan_duty = 0;
+    share_info->last_update_time_ms = millis();
 }
 
 static int main_ec_worker(void) {
@@ -345,10 +354,10 @@ static int main_ec_worker(void) {
         if (share_info->auto_duty == 1) {
             int next_duty = ec_auto_duty_adjust();
             if (next_duty != share_info->auto_duty_val) {
-                char s_time[256];
-                get_time_string(s_time, 256, "%m/%d %H:%M:%S");
-                printf("%s CPU=%d°C, GPU=%d°C, auto fan duty to %d%%\n", s_time,
-                       share_info->cpu_temp, share_info->gpu_temp, next_duty);
+//                char s_time[256];
+//                get_time_string(s_time, 256, "%m/%d %H:%M:%S");
+//                printf("%s CPU=%d°C, GPU=%d°C, auto fan duty to %d%%\n", s_time,
+//                       share_info->cpu_temp, share_info->gpu_temp, next_duty);
                 ec_write_fan_duty(next_duty);
                 share_info->auto_duty_val = next_duty;
             }
@@ -361,7 +370,6 @@ static int main_ec_worker(void) {
 }
 
 static void main_ui_worker(int argc, char **argv) {
-    printf("Indicator...\n");
     int desktop_uid = getuid();
     setuid(desktop_uid);
     //
@@ -389,7 +397,7 @@ static void main_ui_worker(int argc, char **argv) {
     app_indicator_set_label(indicator, "Init..", "XX");
     app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
     app_indicator_set_ordering_index(indicator, -2);
-    app_indicator_set_title(indicator, "Clevo\n<h5>Yo</h5>");
+    app_indicator_set_title(indicator, "Clevo Fan Control");
     app_indicator_set_menu(indicator, GTK_MENU(indicator_menu));
     g_timeout_add(500, &ui_update, NULL);
     ui_toggle_menuitems(share_info->auto_duty ? -1 : share_info->fan_duty);
@@ -428,13 +436,16 @@ static int main_test_fan(int duty_percentage) {
 
 static gboolean ui_update(gpointer user_data) {
     char label[256];
-    sprintf(label, "%d℃ %d℃", share_info->cpu_temp, share_info->gpu_temp);
-    app_indicator_set_label(indicator, label, "XXXXXX");
     char icon_name[256];
     double load = ((double) share_info->fan_rpms) / MAX_FAN_RPM * 100.0;
     double load_r = round(load / 5.0) * 5.0;
+    sprintf(label, "Clevo Fan Control\n%d℃ %d℃\n%i RPM", share_info->cpu_temp,
+            share_info->gpu_temp, share_info->fan_rpms);
+    app_indicator_set_label(indicator, label, "XXXXXX");
+    app_indicator_set_title(indicator, label);
     sprintf(icon_name, "brasero-disc-%02d", (int) load_r);
 //    app_indicator_set_icon(indicator, icon_name);
+
     return G_SOURCE_CONTINUE;
 }
 
@@ -443,8 +454,8 @@ static void ui_command_set_fan(long fan_duty) {
     if (fan_duty_val == -1) {
         printf("clicked on fan duty auto\n");
         share_info->auto_duty = 1;
-        share_info->auto_duty_val = 0;
-        share_info->manual_next_fan_duty = 0;
+        share_info->auto_duty_val = MIN_FAN_DUTY;
+        share_info->manual_next_fan_duty = MIN_FAN_DUTY;
     } else {
         printf("clicked on fan duty: %d\n", fan_duty_val);
         share_info->auto_duty = 0;
@@ -489,47 +500,34 @@ static void ec_on_sigterm(int signum) {
 
 static int ec_auto_duty_adjust(void) {
     int temp = MAX(share_info->cpu_temp, share_info->gpu_temp);
-    int duty = share_info->fan_duty;
+    int last_fan_duty = share_info->auto_duty_val;
+    int min_time_until_next_update_ms = 333;
+
+    // Determine time difference since last update.
+    int64_t now = millis();
+    int64_t diff_t = now - share_info->last_update_time_ms;
+
+    if (diff_t < min_time_until_next_update_ms) {
+        return last_fan_duty;
+    }
+
+    share_info->last_update_time_ms = now;
 
     // "Silent" profile
-    if (temp >= 95)
-        return 100;
-    if (temp >= 93)
-        return 95;
-    if (temp >= 91)
-        return 90;
-    if (temp >= 90)
-        return 85;
-    if (temp >= 89)
-        return 80;
-    if (temp >= 88)
-        return 75;
-    if (temp >= 86)
-        return 70;
-    if (temp >= 84)
-        return 65;
-    if (temp >= 82)
-        return 60;
-    if (temp >= 80)
-        return 55;
-    if (temp >= 78)
-        return 50;
-    if (temp >= 76)
-        return 45;
-    if (temp >= 74)
-        return 40;
-    if (temp >= 72)
-        return 35;
-    if (temp >= 70)
-        return 30;
-    if (temp >= 66)
-        return 25;
-    if (temp >= 64)
-        return 20;
-    if (temp >= 61)
-        return 15;
-
-    return 0;
+    int max_fan_duty = 40;
+    int min_temp_for_duty_increase = 60;
+    int max_temp = 105;
+    int max_fan_duty_step = 1;
+    int calculated_fan_duty = MAX(MIN_FAN_DUTY,
+                                  get_point_along_line(min_temp_for_duty_increase, MIN_FAN_DUTY,
+                                                       max_temp,
+                                                       max_fan_duty, temp));
+    int fan_duty_delta = calculated_fan_duty - last_fan_duty;
+    int next_fan_duty = last_fan_duty + CLAMP(fan_duty_delta, -1 * max_fan_duty_step,
+                                              max_fan_duty_step);
+//    printf("Temp=%i calculated_fan_duty=%i%% next_fan_duty=%i%%\n", temp,
+//           calculated_fan_duty, next_fan_duty);
+    return next_fan_duty;
 }
 
 static int ec_query_cpu_temp(void) {
@@ -666,4 +664,14 @@ static void signal_term(__sighandler_t handler) {
     signal(SIGTERM, handler);
     signal(SIGUSR1, handler);
     signal(SIGUSR2, handler);
+}
+
+static int64_t millis() {
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+    return ((int64_t) now.tv_sec) * 1000 + ((int64_t) now.tv_nsec) / 1000000;
+}
+
+static float get_point_along_line(float x0, float y0, float x1, float y1, float xp) {
+    return (y0 + ((y1 - y0) / (x1 - x0)) * (xp - x0));
 }
