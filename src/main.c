@@ -500,7 +500,7 @@ static void ec_on_sigterm(int signum) {
 
 static int ec_auto_duty_adjust(void) {
     int temp = MAX(share_info->cpu_temp, share_info->gpu_temp);
-    int last_fan_duty = share_info->auto_duty_val;
+    int last_fan_duty = MAX(MIN_FAN_DUTY, share_info->auto_duty_val);
     int min_time_until_next_update_ms = 333;
 
     // Determine time difference since last update.
