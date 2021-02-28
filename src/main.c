@@ -181,6 +181,8 @@ struct {
     volatile int manual_next_fan_duty;
     volatile int manual_prev_fan_duty;
     volatile int64_t last_update_time_ms;
+    volatile int last_speed_change_delta;
+    volatile int64_t last_speed_change_direction_time_ms;
 } static *share_info = NULL;
 
 static pid_t parent_pid = 0;
@@ -306,6 +308,8 @@ static void main_init_share(void) {
     share_info->manual_next_fan_duty = 0;
     share_info->manual_prev_fan_duty = 0;
     share_info->last_update_time_ms = millis();
+    share_info->last_speed_change_delta = 0;
+    share_info->last_speed_change_direction_time_ms = 0;
 }
 
 static int main_ec_worker(void) {
@@ -527,6 +531,23 @@ static int ec_auto_duty_adjust(void) {
                                               max_fan_duty_step);
 //    printf("Temp=%i calculated_fan_duty=%i%% next_fan_duty=%i%%\n", temp,
 //           calculated_fan_duty, next_fan_duty);
+
+    // Determine the fan speed change delta.
+    int fan_speed_change_delta = next_fan_duty - last_fan_duty;
+
+    // If the speed changed in a different direction then updated the relevant variable.
+    if ((fan_speed_change_delta ^ share_info->last_speed_change_delta) < 0){
+        share_info->last_speed_change_delta = next_fan_duty - last_fan_duty;
+        share_info->last_speed_change_direction_time_ms = now;
+    }
+
+    // Determine time difference between last speed direction change.
+    int64_t diff_speed_direction_change_t = now - share_info->last_speed_change_direction_time_ms;
+    int min_time_until_next_direction_change_ms = 5000;
+    if (diff_speed_direction_change_t < min_time_until_next_direction_change_ms) {
+        return last_fan_duty;
+    }
+
     return next_fan_duty;
 }
 
