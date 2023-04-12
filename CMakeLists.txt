@@ -27,7 +27,7 @@ link_directories(${GTK3_LIBRARY_DIRS})
 add_definitions(${GTK3_CFLAGS_OTHER})
 
 # Link the target to the dependencies.
-target_link_libraries(clevo-fan-control ${APPINDICATOR_LIBRARIES} ${GTK3_LIBRARIES})
+target_link_libraries(clevo-fan-control ${APPINDICATOR_LIBRARIES} ${GTK3_LIBRARIES} m)
 
 # Specify installation rules.
 install(
