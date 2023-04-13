@@ -18,20 +18,21 @@ sudo cmake --install .
 
 ## Fedora installation
 ### Build from source
-1. Install debug kernel `sudo dnf install -y kernel-debug`
-2. Reboot and boot into debug kernel from boot menu
-3. Install the necessary packages (dependencies): `sudo dnf install -y gcc cmake libappindicator-gtk3-devel pkg-config git gnome-shell-extension-appindicator`
-4. Enable indicator: gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com
-5. Clone the repo: `git clone https://github.com/comexr/fan-control.git`
-6. Create a directory for installation files: `mkdir fan`
-7. Enter the directory: `cd fan`
-8. Install the driver: 
+1. Install debug kernel (for ec_sys module): `sudo dnf install -y kernel-debug`
+2. Boot into debug kernel by default: `sudo sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub`
+3. Update grub: `sudo grub2-mkconfig -o /boot/grub2/grub.cfg`
+4. Install the necessary packages (dependencies): `sudo dnf install -y gcc cmake libappindicator-gtk3-devel pkg-config git gnome-shell-extension-appindicator`
+5. Enable indicator: gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com
+6. Clone the repo: `git clone https://github.com/comexr/fan-control.git`
+7. Create a directory for installation files: `mkdir fan`
+8. Enter the directory: `cd fan`
+9. Install the driver: 
 ```shell
 cmake -DUSER=$(whoami) -DGROUP=$(whoami) -DHOME=/home/$(whoami) ~/fan-control
 cmake --build .
 sudo cmake --install .
 ```
-6. Reboot to apply changes: `reboot`
+10. Reboot to apply changes: `reboot`
 
 ### Uninstalling
 
