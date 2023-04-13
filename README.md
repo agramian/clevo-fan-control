@@ -18,11 +18,14 @@ sudo cmake --install .
 
 ## Fedora installation
 ### Build from source
-1. Install the necessary packages (dependencies): `sudo dnf install -y gcc cmake libappindicator-gtk3-devel pkg-config git`
-2. Clone the repo: `git clone https://github.com/comexr/fan-control.git`
-3. Create a directory for installation files: `mkdir fan`
-4. Enter the directory: `cd fan`
-5. Install the driver: 
+1. Install debug kernel `sudo dnf install -y kernel-debug`
+2. Reboot and boot into debug kernel from boot menu
+3. Install the necessary packages (dependencies): `sudo dnf install -y gcc cmake libappindicator-gtk3-devel pkg-config git gnome-shell-extension-appindicator`
+4. Enable indicator: gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com
+5. Clone the repo: `git clone https://github.com/comexr/fan-control.git`
+6. Create a directory for installation files: `mkdir fan`
+7. Enter the directory: `cd fan`
+8. Install the driver: 
 ```shell
 cmake -DUSER=$(whoami) -DGROUP=$(whoami) -DHOME=/home/$(whoami) ~/fan-control
 cmake --build .
