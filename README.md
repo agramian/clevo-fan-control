@@ -10,7 +10,7 @@
 5. Enter the directory: `cd fan`
 6. Install the driver: 
 ```shell
-cmake -DUSER=$(whoami) -DGROUP=$(whoami) -DHOME=/home/$(whoami) ~/clevo-fan-control
+cmake -DUSER=$(whoami) -DGROUP=$(whoami) -DHOME=/home/$(whoami) ~/fan-control
 cmake --build .
 sudo cmake --install .
 ```
