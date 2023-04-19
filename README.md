@@ -16,6 +16,27 @@ sudo cmake --install .
 ```
 7. Reboot to apply changes: `reboot`
 
+## Debian installation
+
+### Build from source
+1. Remove conflicting packages: `sudo apt remove -y libayatana-appindicator3-1`
+2. Temporarily add Buster repo for dependency: `echo "deb http://deb.debian.org/debian buster main" | sudo tee /etc/apt/sources.list.d/temp.list`
+3. Update repo list: `sudo apt update
+4. Install the necessary packages (dependencies): `sudo apt install -y gcc cmake libappindicator3-dev libgtk-3-dev pkg-config git gnome-shell-extension-appindicator`
+5. Remove buster repo : `sudo rm /etc/apt/sources.list.d/temp.list`
+6. Update repo list: `sudo apt update`
+7. Clone the repo: `git clone https://github.com/comexr/fan-control.git`
+8. Create a directory for installation files: `mkdir fan`
+9. Enter the directory: `cd fan`
+10. Install the driver: 
+```shell
+cmake -DUSER=$(whoami) -DGROUP=$(whoami) -DHOME=/home/$(whoami) ~/fan-control
+cmake --build .
+sudo cmake --install .
+```
+7. Reboot to apply changes: `reboot`
+
+
 ## Fedora installation
 ### Build from source
 1. Install debug kernel (for ec_sys module): `sudo dnf install -y kernel-debug`
