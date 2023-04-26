@@ -43,7 +43,7 @@ sudo cmake --install .
 2. Boot into debug kernel by default: `sudo sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub`
 3. Update grub: `sudo grub2-mkconfig -o /boot/grub2/grub.cfg`
 4. Install the necessary packages (dependencies): `sudo dnf install -y gcc cmake libappindicator-gtk3-devel pkg-config git gnome-shell-extension-appindicator`
-5. Enable indicator: gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com
+5. Enable indicator: `gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com`
 6. Clone the repo: `git clone https://github.com/comexr/fan-control.git`
 7. Create a directory for installation files: `mkdir fan`
 8. Enter the directory: `cd fan`
