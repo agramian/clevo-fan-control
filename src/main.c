@@ -146,10 +146,9 @@ struct {
     GtkWidget *widget;
 
 } static menuitems[] = {
-        {"AUTO", G_CALLBACK(ui_command_set_fan), -1,  AUTO,   NULL},
+	{"AUTO", G_CALLBACK(ui_command_set_fan), -1,  AUTO,   NULL},
         {"",                NULL,                           0L,  NA,     NULL},
-        {"",                NULL,                           0L,  NA,     NULL},
-        {"Quit",            G_CALLBACK(ui_command_quit),    0L,  NA,     NULL}
+	{"Quit",            G_CALLBACK(ui_command_quit),    0L,  NA,     NULL}
 };
 
 static int menuitem_count = (sizeof(menuitems) / sizeof(menuitems[0]));
@@ -427,11 +426,11 @@ static gboolean ui_update(gpointer user_data) {
     char icon_name[256];
     double load = ((double) share_info->fan_rpms) / MAX_FAN_RPM * 100.0;
     double load_r = round(load / 5.0) * 5.0;
-    sprintf(label, "Fan");
+    sprintf(label, "");
     app_indicator_set_label(indicator, label, "XXXXXX");
     app_indicator_set_title(indicator, label);
     sprintf(icon_name, "brasero-disc-%02d", (int) load_r);
-//    app_indicator_set_icon(indicator, icon_name);
+    app_indicator_set_icon(indicator, "");
 
     return G_SOURCE_CONTINUE;
 }
@@ -501,7 +500,7 @@ static int ec_auto_duty_adjust(void) {
     share_info->last_update_time_ms = now;
 
     // "Silent" profile
-    int max_fan_duty = 40;
+    int max_fan_duty = 60;
     int min_temp_for_duty_increase = 60;
     int max_temp = 105;
     int max_fan_duty_step = 1;
