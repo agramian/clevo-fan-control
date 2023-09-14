@@ -70,7 +70,7 @@
 #define EC_REG_FAN_RPMS_LO 0xD1
 
 #define MAX_FAN_RPM 4400.0
-#define MIN_FAN_DUTY 16
+#define MIN_FAN_DUTY 25
 
 typedef enum {
     NA = 0, AUTO = 1, MANUAL = 2
