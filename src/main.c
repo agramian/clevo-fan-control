@@ -148,22 +148,6 @@ struct {
 } static menuitems[] = {
         {"Set FAN to AUTO", G_CALLBACK(ui_command_set_fan), -1,  AUTO,   NULL},
         {"",                NULL,                           0L,  NA,     NULL},
-        {"Set FAN to  0%",  G_CALLBACK(ui_command_set_fan), 0,   MANUAL, NULL},
-        {"Set FAN to  10%", G_CALLBACK(ui_command_set_fan), 10,  MANUAL, NULL},
-        {"Set FAN to  15%", G_CALLBACK(ui_command_set_fan), 15,  MANUAL, NULL},
-        {"Set FAN to  16%", G_CALLBACK(ui_command_set_fan), 16,  MANUAL, NULL},
-        {"Set FAN to  17%", G_CALLBACK(ui_command_set_fan), 17,  MANUAL, NULL},
-        {"Set FAN to  18%", G_CALLBACK(ui_command_set_fan), 18,  MANUAL, NULL},
-        {"Set FAN to  19%", G_CALLBACK(ui_command_set_fan), 19,  MANUAL, NULL},
-        {"Set FAN to  20%", G_CALLBACK(ui_command_set_fan), 20,  MANUAL, NULL},
-        {"Set FAN to  30%", G_CALLBACK(ui_command_set_fan), 30,  MANUAL, NULL},
-        {"Set FAN to  40%", G_CALLBACK(ui_command_set_fan), 40,  MANUAL, NULL},
-        {"Set FAN to  50%", G_CALLBACK(ui_command_set_fan), 50,  MANUAL, NULL},
-        {"Set FAN to  60%", G_CALLBACK(ui_command_set_fan), 60,  MANUAL, NULL},
-        {"Set FAN to  70%", G_CALLBACK(ui_command_set_fan), 70,  MANUAL, NULL},
-        {"Set FAN to  80%", G_CALLBACK(ui_command_set_fan), 80,  MANUAL, NULL},
-        {"Set FAN to  90%", G_CALLBACK(ui_command_set_fan), 90,  MANUAL, NULL},
-        {"Set FAN to 100%", G_CALLBACK(ui_command_set_fan), 100, MANUAL, NULL},
         {"",                NULL,                           0L,  NA,     NULL},
         {"Quit",            G_CALLBACK(ui_command_quit),    0L,  NA,     NULL}
 };
