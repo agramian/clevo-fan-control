@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Clevo Fan Control
-Exec="sudo /usr/local/bin/clevo-fan-control" %f
+Exec="/usr/local/bin/clevo-fan-control" %f
 Terminal=false
 Comment=Fan control service for Clevo laptops
 Categories=Settings;HardwareSettings;
