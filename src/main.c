@@ -146,7 +146,7 @@ struct {
     GtkWidget *widget;
 
 } static menuitems[] = {
-        {"Set FAN to AUTO", G_CALLBACK(ui_command_set_fan), -1,  AUTO,   NULL},
+        {"AUTO", G_CALLBACK(ui_command_set_fan), -1,  AUTO,   NULL},
         {"",                NULL,                           0L,  NA,     NULL},
         {"",                NULL,                           0L,  NA,     NULL},
         {"Quit",            G_CALLBACK(ui_command_quit),    0L,  NA,     NULL}
@@ -385,7 +385,7 @@ static void main_ui_worker(int argc, char **argv) {
     app_indicator_set_label(indicator, "Init..", "XX");
     app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
     app_indicator_set_ordering_index(indicator, -2);
-    app_indicator_set_title(indicator, "Clevo Fan Control");
+    app_indicator_set_title(indicator, "Fan");
     app_indicator_set_menu(indicator, GTK_MENU(indicator_menu));
     g_timeout_add(500, &ui_update, NULL);
     ui_toggle_menuitems(share_info->auto_duty ? -1 : share_info->fan_duty);
@@ -427,8 +427,7 @@ static gboolean ui_update(gpointer user_data) {
     char icon_name[256];
     double load = ((double) share_info->fan_rpms) / MAX_FAN_RPM * 100.0;
     double load_r = round(load / 5.0) * 5.0;
-    sprintf(label, "Clevo Fan Control\n%d℃ %d℃\n%i RPM", share_info->cpu_temp,
-            share_info->gpu_temp, share_info->fan_rpms);
+    sprintf(label, "Fan");
     app_indicator_set_label(indicator, label, "XXXXXX");
     app_indicator_set_title(indicator, label);
     sprintf(icon_name, "brasero-disc-%02d", (int) load_r);
