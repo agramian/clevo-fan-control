@@ -314,7 +314,25 @@ static void main_init_share(void) {
 
 static int main_ec_worker(void) {
     setuid(0);
-    system("/usr/sbin/modprobe ec_sys");
+    int ret = system("/usr/sbin/modinfo ec_sys > /dev/null");
+    char *ec_path;
+    if (ret==0) {
+        system("/usr/sbin/modprobe ec_sys");
+        ec_path = "/sys/kernel/debug/ec/ec0/io";
+        ret=1;
+    } else {
+        printf("no module ec_sys, trying acpi_ec\n");
+        ret = system("/usr/sbin/modinfo acpi_ec > /dev/null");
+        if (ret==0) {
+            system("/usr/sbin/modprobe acpi_ec");
+            ec_path = "/dev/ec";
+            ret=2;
+        } else {
+            printf("no acpi_ec module, try running a debug kernel with ec_sys or install https://github.com/musikid/acpi_ec.git\n");
+            return EXIT_FAILURE;
+        }
+    }
+
     while (share_info->exit == 0) {
         // check parent
         if (parent_pid != 0 && kill(parent_pid, 0) == -1) {
@@ -328,7 +346,7 @@ static int main_ec_worker(void) {
             share_info->manual_prev_fan_duty = new_fan_duty;
         }
         // read EC
-        int io_fd = open("/sys/kernel/debug/ec/ec0/io", O_RDONLY, 0);
+        int io_fd = open(ec_path, O_RDONLY, 0);
         if (io_fd < 0) {
             printf("unable to read EC from sysfs: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
