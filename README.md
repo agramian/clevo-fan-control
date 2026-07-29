@@ -37,6 +37,7 @@ cmake -DUSER=<user> -DGROUP=<user group> -DHOME=<home directory path> <path/to/c
 cmake --build .
 sudo cmake --install .
 ```
+If you are a Gentoo user you can install via portage, `emerge --ask app-laptop/clevo-fan-control`, available on Masterwolf overlay and soon also on Guru overlay.
 
 ### Uninstalling
 
